@@ -27,6 +27,9 @@ pip-log.txt
 .tox
 nosetests.xml
 
+# test data (large files)
+tests/data/*
+
 # Translations
 *.mo
 
@@ -34,3 +37,14 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# TextMate
+*.tmproj
+
+# iPython
+.ipynb_checkpoints
+*.ipynb
+
+# documentation build directory
+doc/_build/
+doc/_build/*
