@@ -12,6 +12,7 @@ import numpy as np
 import seaborn as sns
 from pygaarst import raster
 from pygaarst import basemaputils as bu
+from pygaarst.rasterhelpers import PygaarstRasterError
 from matplotlib import pyplot as plt
 import fiona
 from shapely.geometry import Polygon
@@ -127,7 +128,11 @@ def generate_viz(scene, outdir,
             print("Error opening file {}: {}.".format(tf, err))
             print("Aborting plot for scene {}.".format(datadir))
             return
-        edgelons, edgelats = vt.getedge(tsto)
+        try:
+            edgelons, edgelats = vt.getedge(tsto)
+        except PygaarstRasterError as err:
+            print("PygaarstRasterError, aborting: {}".format(err))
+            return
         x, y = mm(edgelons, edgelats)
         contour = Polygon(zip(x, y))
         try:
@@ -218,9 +223,16 @@ if __name__ == '__main__':
             os.makedirs(outdir)
         slug = dt.datetime.utcnow().strftime('%Y%m%d%H%M%S')
         if os.path.isdir(args.testdir):
-            datadir = os.path.join(args.testdir, 'sdr')
+            if os.path.isdir(os.path.join(args.testdir, 'sdr')):
+                datadir = os.path.join(args.testdir, 'sdr')
+            else:
+                datadir = args.testdir
         else: 
-            datadir = os.path.join(args.archivedir, args.testdir, 'sdr')
+            if os.path.isdir(os.path.join(
+                args.archivedir, args.testdir, 'sdr')):
+                datadir = os.path.join(args.archivedir, args.testdir, 'sdr')
+            else:
+                datadir = os.path.join(args.archivedir, args.testdir)
         generate_viz(
             'test_{}'.format(slug), 
             outdir, fig, mm, 
@@ -235,8 +247,9 @@ if __name__ == '__main__':
             dirlist = filter(os.path.isdir, dirlist)
             dirlist.sort()
         for scene in dirlist:
+            print()
             outdir = os.path.join(args.archivedir, VIZDIR)
-            print("scene variable: {}".format(scene))
+            print("Scene variable: {}".format(scene))
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             print("Writing to {}.".format(outdir))
