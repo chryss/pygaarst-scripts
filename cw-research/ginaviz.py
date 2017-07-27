@@ -26,7 +26,7 @@ NASPATH = "/Volumes/cwdata1/VIIRS/GINA/dds.gina.alaska.edu/NPP/viirs"
 VIZDIR = "visual"
 TESTDIR = "testviz"
 SCENELIST = "GINA_list.txt"
-FILEPAT = 'SVM11_npp_*.h5'
+FILEPAT = 'SVM12_npp_*.h5'
 VF = 'BorealAKForUAFSmoke.json'
 VECTOROVERLAY = None        #ugly
 if VF:
@@ -93,6 +93,13 @@ def generate_viz(scene, outdir,
         __builtin__.file = newfile
         __builtin__.open = newopen
 
+    figname = os.path.split('{}_plot.png'.format(scene))[-1]
+    if os.path.exists(os.path.join(outdir, figname)): 
+        if overwrite:
+            print("{} exists, overwriting.".format(figname))
+        else:
+            print("{} exists, skipping.".format(figname))
+            return
     ax = fig.gca()
     if not datadir:
         datadir = os.path.join(NASPATH, scene, 'sdr')
@@ -100,17 +107,10 @@ def generate_viz(scene, outdir,
         datadir = os.path.join(datadir, scene, 'sdr')
     else:
         datadir = os.path.join(datadir, scene)
-    print(datadir)
+    print("Working on data in {}.".format(datadir))
     if not os.path.isdir(datadir):
         print("{} is not a directory, skipping.".format(datadir))
         return
-    figname = '{}_plot.png'.format(scene)
-    if os.path.exists(os.path.join(NASPATH, VIZDIR, figname)): 
-        if overwrite:
-            print("{} exists, overwriting.".format(figname))
-        else:
-            # print("{} exists, skipping.".format(figname))
-            return
     os.chdir(datadir)
     testfiles = glob.glob(FILEPAT)
     print("Working with {} data files.".format(len(testfiles)))
@@ -121,7 +121,12 @@ def generate_viz(scene, outdir,
     plottexts = []
     for idx, tf in enumerate(testfiles):
         print('{}: {}'.format(idx, tf))
-        tsto = raster.VIIRSHDF5(tf)
+        try:
+            tsto = raster.VIIRSHDF5(tf)
+        except IOError as err:
+            print("Error opening file {}: {}.".format(tf, err))
+            print("Aborting plot for scene {}.".format(datadir))
+            return
         edgelons, edgelats = vt.getedge(tsto)
         x, y = mm(edgelons, edgelats)
         contour = Polygon(zip(x, y))
@@ -227,6 +232,8 @@ if __name__ == '__main__':
             dirlist = read_items(os.path.join(args.archivedir, SCENELIST))
         else:
             dirlist = glob.glob(os.path.join(args.archivedir, "201[0-9]_*"))
+            dirlist = filter(os.path.isdir, dirlist)
+            dirlist.sort()
         for scene in dirlist:
             outdir = os.path.join(args.archivedir, VIZDIR)
             print("scene variable: {}".format(scene))
