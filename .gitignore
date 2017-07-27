@@ -48,3 +48,11 @@ tests/data/*
 # documentation build directory
 doc/_build/
 doc/_build/*
+
+# images
+*.pdf
+*.tif
+*.tiff
+*.png
+*.jpg
+*.jpeg
