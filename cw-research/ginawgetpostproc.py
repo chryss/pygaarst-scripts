@@ -16,7 +16,9 @@ if __name__ == '__main__':
     dirnames = glob.glob('npp*')
     dirnames = filter(os.path.isdir, dirnames)
     for dirname in dirnames:
-        _, b, c = dirname.split('.')
+        dummy = dirname.split('.')
+        b = dummy[1]
+        c = dummy[2][:4]
         newname = dt.datetime.strftime(
             dt.datetime.strptime(b+c, '%y%j%H%M'), '%Y_%m_%d_%j_%H%M')
         if os.path.islink(newname):

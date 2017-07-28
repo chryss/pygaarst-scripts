@@ -12,11 +12,11 @@ key="$1"
 case $key in
     -d|--days)
         DAYS="$2"
-        shift # past argument
+        shift
         ;;
     -t|--target)
         TARGETDIR="$2"
-        shift # past argument
+        shift
         ;;
     *)
         break    # unknown option
