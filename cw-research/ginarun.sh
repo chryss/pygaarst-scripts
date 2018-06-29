@@ -29,7 +29,7 @@ cd $SCRIPTDIR
 #python ginasync.py --reb
 #python ginasync.py
 bash mirror_products.sh -f uafgina -s snpp -i viirs -p level1 -n -d $DAYS -o $TARGETDIR
-python ginawgetpostproc.py
+python ginawgetpostproc.py -d $TARGETDIR
 python ginaviz.py --num --dir $TARGETDIR
 
 source deactivate

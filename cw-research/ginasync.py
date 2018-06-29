@@ -4,7 +4,8 @@
 # Fire detection: GINA download and sync script
 
 from __future__ import print_function, unicode_literals, division
-import os, os.path, sys
+import os
+import sys
 import re
 import argparse
 import datetime as dt
@@ -26,23 +27,30 @@ REMOTEWORK = True
 CLEANUP = False
 WRITEDIRS = True
 
+
 def parse_arguments():
     """Parse arguments"""
-    parser = argparse.ArgumentParser(description='Sync VIIRS GINA with NAS storage')
-    parser.add_argument('--lc', dest='cleanup',
+    parser = argparse.ArgumentParser(
+        description='Sync VIIRS GINA with NAS storage')
+    parser.add_argument(
+        '--lc', dest='cleanup',
         help='Perform local clean-up and rewrite index',
         action='store_true')
-    parser.add_argument('--nd', dest='nodownload',
+    parser.add_argument(
+        '--nd', dest='nodownload',
         help='Don\'t download new files',
         action='store_true')
-    parser.add_argument('-o', dest='overwrt', 
+    parser.add_argument(
+        '-o', dest='overwrt',
         help='overwrite existing directories',
         action='store_true')
-    parser.add_argument('--reb', dest='rebuild',
+    parser.add_argument(
+        '--reb', dest='rebuild',
         help='check and rebuild index of existing scenes, then exit',
         action='store_true')
     parser.add_argument('--retrievedir', help='retrieve one single directory')
     return parser.parse_args()
+
 
 def is_valid_scenedir(dirstring):
     """Check is a directory name is a valid scene directory"""
@@ -51,6 +59,7 @@ def is_valid_scenedir(dirstring):
     elif not SCREGEX.match(dirstring):
         return False
     return True
+
 
 def localcleanup():
     cleanup = []
@@ -74,16 +83,22 @@ def localcleanup():
         for dirname in cleanup:
             shutil.rmtree(dirname)
 
+
 def _dirname_is_valid(testname, includenames, excludenames):
-    """includenames and excludenames are sequence types. If either is empty, 
+    """includenames and excludenames are sequence types. If either is empty,
     nothing is excluded and/or all is included"""
-    if (not includenames or testname in includenames) and testname not in excludenames:
+    if (
+        (not includenames or testname in includenames) and
+        testname not in excludenames
+    ):
         return True
-    else: return False
+    else:
+        return False
+
 
 def remotedownload(excludedirs, includedirs=[], overwrite=False):
     os.chdir(NASPATH)
-    if overwrite: # we exclude the excludedirs list
+    if overwrite:    # we exclude the excludedirs list
         excludedirs = []
     with ftputil.FTPHost(FTPDOMAIN, FTPU, FTPP) as host:
         host.chdir(GINAPATH)
@@ -98,7 +113,7 @@ def remotedownload(excludedirs, includedirs=[], overwrite=False):
                             os.makedirs(name + '/sdr')
                         os.chdir(name + '/sdr')
                         excludefiles = []
-                        if not overwrite: 
+                        if not overwrite:
                             excludefiles = os.listdir('.')
                         for fn in host.listdir(host.curdir):
                             if host.path.isfile(fn) and not fn in excludefiles:
@@ -107,6 +122,7 @@ def remotedownload(excludedirs, includedirs=[], overwrite=False):
                         os.chdir(NASPATH)
                     host.chdir('..')
                 host.chdir('..')
+
 
 def rebuildscenelist():
     scenedirnames = filter(is_valid_scenedir, os.listdir(NASPATH))
@@ -143,6 +159,7 @@ def rebuildscenelist():
     else:
         print("Index up to date -- nothing to do.")
 
+
 if __name__ == '__main__':
     args = parse_arguments()
     if args.rebuild:
@@ -154,13 +171,16 @@ if __name__ == '__main__':
         localcleanup()
         rebuildscenelist()
     if args.retrievedir:
-        remotedownload([], includedirs=[args.retrievedir], overwrite=args.overwrt)
+        remotedownload(
+            [], includedirs=[args.retrievedir], overwrite=args.overwrt)
         sys.exit()
     if not args.nodownload:
         try:
-            localdirs = [fn.strip() 
-                for fn in open(os.path.join(NASPATH, GINALISTFN), 'rU').readlines()]
-        except IOError: localdirs = []
+            localdirs = [
+                fn.strip() for fn in open(
+                    os.path.join(NASPATH, GINALISTFN), 'rU').readlines()]
+        except IOError:
+            localdirs = []
         remotedownload(localdirs, overwrite=args.overwrt)
         localcleanup()
         rebuildscenelist()

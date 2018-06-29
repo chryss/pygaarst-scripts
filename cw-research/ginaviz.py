@@ -4,11 +4,11 @@
 # Fire detection: GINA download and sync script
 
 from __future__ import print_function, unicode_literals, division
-import os, sys
+import os
+import sys
 import argparse
 import datetime as dt
 import glob
-import numpy as np
 import seaborn as sns
 from pygaarst import raster
 from pygaarst import basemaputils as bu
@@ -20,7 +20,9 @@ from shapely.geos import TopologicalError
 from descartes import PolygonPatch
 from pprint import pprint
 
-sys.path.append("/Users/chris/Dropbox/Research/satelliteremotesensing/firedetection")
+sys.path.append(os.path.join(
+    os.path.expanduser('~'),
+    "Dropbox/Research/satelliteremotesensing/firedetection"))
 import viirstools as vt
 
 NASPATH = "/Volumes/cwdata1/VIIRS/GINA/dds.gina.alaska.edu/NPP/viirs"
@@ -29,36 +31,46 @@ TESTDIR = "testviz"
 SCENELIST = "GINA_list.txt"
 FILEPAT = 'SVM12_npp_*.h5'
 VF = 'BorealAKForUAFSmoke.json'
-VECTOROVERLAY = None        #ugly
+VECTOROVERLAY = None            # ugly
 if VF:
     VECTOROVERLAY = os.path.join(
         os.path.split(
             os.path.realpath(__file__))[0], VF)
 MINFRAC = 0.01   # minimum fractional area for keeping a sub-scene
 
+
 def printOpenFiles(openfiles):
     print("### %d OPEN FILES:" % (len(openfiles), ))
     pprint([f.x for f in openfiles])
 
+
 def parse_arguments():
     """Parse arguments"""
-    parser = argparse.ArgumentParser(description='Produce visualizations of extent of scenes')
-    parser.add_argument('-o', dest='overwrt', 
+    parser = argparse.ArgumentParser(
+        description='Produce visualizations of extent of scenes')
+    parser.add_argument(
+        '-o', dest='overwrt',
         help='overwrite existing images',
         action='store_true')
-    parser.add_argument('--testdir',
+    parser.add_argument(
+        '--testdir',
         help='use a single directory to test')
-    parser.add_argument('--ov', dest='overlayvector',
+    parser.add_argument(
+        '--ov', dest='overlayvector',
         help="overlay vector file",
         default=VECTOROVERLAY)
-    parser.add_argument('--dir', dest='archivedir',
+    parser.add_argument(
+        '--dir', dest='archivedir',
         help="directory containing file archive",
         default=NASPATH)
-    parser.add_argument('--num', action='store_true',
+    parser.add_argument(
+        '--num', action='store_true',
         help="print numbers on plot")
-    parser.add_argument('--debug', action='store_true',
+    parser.add_argument(
+        '--debug', action='store_true',
         help="debug mode")
     return parser.parse_args()
+
 
 def read_items(filepath):
     """Turns a plain text file file with one item/line into an iterator"""
@@ -66,13 +78,13 @@ def read_items(filepath):
         for line in src:
             yield line.strip()
 
-def generate_viz(scene, outdir, 
-        fig, mm, 
-        numbers=False,
-        debug=False,
-        datadir=None,
-        overwrite=False):
 
+def generate_viz(
+    scene, outdir,fig, mm,
+    numbers=False,
+    debug=False,
+    datadir=None,
+    overwrite=False):
     if debug:
         import __builtin__
         openfiles = set()

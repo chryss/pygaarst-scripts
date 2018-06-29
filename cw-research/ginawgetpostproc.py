@@ -5,14 +5,26 @@
 
 from __future__ import print_function, unicode_literals, division
 import os
-import shutil
+import argparse
 import datetime as dt
 import glob
 
 NASDIR = '/Volumes/cwdata1/VIIRS/GINA/mirror_script'
 
+
+def parse_arguments():
+    """Parse arguments"""
+    parser = argparse.ArgumentParser(description='generate scene catalog')
+    parser.add_argument(
+        '-d', dest='datadir',
+        help='set data dir',
+        default=NASDIR)
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    os.chdir(NASDIR)
+    args = parse_arguments()
+    os.chdir(args.datadir)
     dirnames = glob.glob('npp*')
     dirnames = filter(os.path.isdir, dirnames)
     for dirname in dirnames:
@@ -20,7 +32,8 @@ if __name__ == '__main__':
         b = dummy[1]
         c = dummy[2][:4]
         newname = dt.datetime.strftime(
-            dt.datetime.strptime(b+c, '%y%j%H%M'), '%Y_%m_%d_%j_%H%M')
+            dt.datetime.strptime(b + c, '%y%j%H%M'), '%Y_%m_%d_%j_%H%M'
+        )
         if os.path.islink(newname):
             continue
         try:
