@@ -56,3 +56,6 @@ doc/_build/*
 *.png
 *.jpg
 *.jpeg
+
+# external scripts and components
+external/
